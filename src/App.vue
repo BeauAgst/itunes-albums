@@ -1,14 +1,22 @@
 <template>
   <div id="app">
-    <SearchAlbums/>
+    <div class="app-title">iTunes Chart</div>
+    <div class="search-container">
+      <SearchAlbums
+        v-model="query"
+      />
+      <SortAlbums
+        v-model="sort"
+      />
+    </div>
     <FilterAlbums
       :genres="genres"
-      @genreSelection="setGenre"
+      v-model="filter"
     />
-    <SortAlbums
-      @sortTypeChange="setSortType"
+    <AlbumView
+      :albums="queriedAlbums"
+      :favourites="favourites"
     />
-    <AlbumView :albums="sortedAlbums"/>
   </div>
 </template>
 
@@ -30,11 +38,14 @@ export default {
     return {
       albums: [],
       filter: 'all',
-      sort: 'chart position',
+      sort: '',
+      query: '',
+      favourites: [],
     };
   },
   created() {
     this.getAlbums();
+    this.getFavourites();
   },
   methods: {
     getAlbums() {
@@ -46,11 +57,9 @@ export default {
       http.open('GET', 'https://itunes.apple.com/us/rss/topalbums/limit=100/json', true);
       http.send();
     },
-    setGenre(genre) {
-      this.filter = genre;
-    },
-    setSortType(type) {
-      this.sort = type;
+    getFavourites() {
+      const favourites = JSON.parse(localStorage.getItem('favourites')) || [];
+      this.favourites = favourites;
     },
   },
   computed: {
@@ -93,16 +102,34 @@ export default {
             }
             return 0;
           });
+        case 'favourites': {
+          const favourites = JSON.parse(localStorage.getItem('favourites')) || false;
+          if (!favourites) return this.filteredAlbums;
+          return clone.sort((prev, curr) => {
+            const index = favourites.indexOf(curr.id.attributes['im:id']);
+            if (index >= 0) return 1;
+            return -1;
+          });
+        }
         default:
           return this.filteredAlbums;
       }
+    },
+    queriedAlbums() {
+      return this.sortedAlbums
+        .filter((album) => {
+          const artist = album['im:artist'].label.toLowerCase();
+          const title = album['im:name'].label.toLowerCase();
+          return artist.indexOf(this.query) !== -1 || title.indexOf(this.query) !== -1;
+        });
     },
   },
 };
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,600');
+@import url('https://fonts.googleapis.com/css?family=PT+Sans+Narrow');
 
 /* Normalize */
 html {
@@ -111,10 +138,14 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: 'Open Sans', sans-serif;
+  color: #4c55a6;
+  min-height: 100%;
+  overflow-y: overlay;
 }
 
 body {
   margin: 0;
+  background: linear-gradient(180deg, #fff, #f5f5fa) no-repeat center 70px/cover;
 }
 
 a {
@@ -126,6 +157,22 @@ img {
 }
 </style>
 
+<style lang="scss" scoped>
+#app {
+  margin: 0 auto;
+  padding: 0 30px;
+  max-width: 1174px;
+}
+</style>
 
 <style lang="scss" scoped>
+.app-title {
+  padding: 40px 0;
+  font-family: 'PT Sans Narrow', sans-serif;
+  font-size: 60px;
+}
+
+.search-container {
+  display: flex;
+}
 </style>

@@ -1,12 +1,13 @@
 <template>
-  <div class="albums">
+  <transition-group class="albums" name="flip-list" tag="div">
     <AlbumItem
       v-if="albums"
       v-for="album in albums"
       :key="album.id.attributes['im:id']"
       :album="album"
+      :isFavourite="isFavourite(album)"
     />
-  </div>
+  </transition-group>
 </template>
 
 <script>
@@ -22,6 +23,15 @@ export default {
       type: Array,
       required: true,
     },
+    favourites: {
+      type: Array,
+      required: true,
+    },
+  },
+  methods: {
+    isFavourite(album) {
+      return this.favourites.indexOf(album.id.attributes['im:id']) !== -1;
+    },
   },
 };
 </script>
@@ -30,5 +40,9 @@ export default {
 .albums {
   display: flex;
   flex-wrap: wrap;
+}
+
+.flip-list-move {
+  transition: transform .35s;
 }
 </style>

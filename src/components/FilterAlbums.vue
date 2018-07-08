@@ -30,7 +30,7 @@ export default {
   },
   methods: {
     emitGenre(genre) {
-      this.$emit('genreSelection', genre);
+      this.$emit('input', genre);
     },
   },
 };
@@ -38,6 +38,7 @@ export default {
 
 <style lang="scss" scoped>
 .filter {
+  padding: 20px 0;
 
   &-title {
     padding-bottom: .3em;
@@ -51,7 +52,6 @@ export default {
   &-genres {
     display: flex;
     flex-wrap: wrap;
-    margin: 0 -.5em;
   }
 
   &-item {
@@ -61,7 +61,6 @@ export default {
     background: tan;
     border-radius: 1em;
     font-weight: 600;
-    color: #4c55a6;
     background: rgba(76, 85, 166, .1);
     font-size: 13px;
     transition: all .3s;
